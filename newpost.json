@@ -1,0 +1,15 @@
+{
+  "parent_author": "",
+  "parent_permlink": "opb",
+  "permlink": "curation-{num}",
+  "title": "Curation reward #{num}: I'm a divider between new and old posts! Below me are outdated posts.",
+  "json_metadata": {
+    "tags": [
+      "whales",
+      "frontrun",
+      "curationreward"
+    ],
+    "format": "html",
+    "app": "steemit"
+  }
+}

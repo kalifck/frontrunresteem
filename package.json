@@ -1,0 +1,14 @@
+{
+  "name": "frontrun-resteemer",
+  "version": "0.0.0",
+  "description": "Frontrun Resteemer",
+  "main": "app.js",
+  "author": {
+    "name": "Felix Tang"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "cli-table2": "^0.2.0",
+    "steem": "^0.7.1"
+  }
+}
