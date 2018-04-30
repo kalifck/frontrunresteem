@@ -69,86 +69,28 @@ function scurate(posts) {
 }
 
 
-
-//Fetching reblogged posts for comparison with recent frontrun posts
 function checkpost() {
-    
-    steem.api.getAccountHistory(username, -1, 1000, function (err, result) {
+    //Comparing the reblogged author,permlinks to the author,permlinks provided by steembottracker
+    check = rpermlink.every((link) => permlinks.includes(link))
+    console.log('No posts available: ' + check);
 
-        result.forEach(trans => {
-            var op = trans[1].op;
+    //If there is difference in authors, new data created
+    if (check == false) {
+        console.log("There's new frontrun post!  ");
+        createPost();
 
-            //Check for reblogged posts with available frontrun posts
-            if (op[0] == 'custom_json' && op[1].id == 'follow') {
-                var json = JSON.parse(op[1].json);
-                var { author, permlink } = json[1];
-                rpermlink.push(permlink);
-            }
-            //Calculate the num for post tally
-            if (op[0] == 'comment' && op[1].permlink) {
-                var arrperm = op[1].permlink;
-                tallyperm.push(arrperm);
-            }
-        });
-
-        const x = tallyperm.filter(item => item.match(/^curation-\d+$/))
-        
-
-        var num_loaded = Math.max.apply(null, (x.map(function (item) { return item.replace(/curation-/g, '') })
-        ));
-
-        //Reversing the whole array to get the latest reblogged post
-        rpermlink = rpermlink.reverse();
-        if (rpermlink.length > 3) { rpermlink.length = 5;}
-
-        //Using cli-table to print data
-        var Table = require('cli-table2');
-        var table = new Table({
-            head: ["index", "author", "permlinks","reblogged","tallypost"],
-            wordWrap: true
-        });
-
-        for (var i = 0; i < 5; i++) {
-            table.push([i + 1, authors[i], permlinks[i], rpermlink[i], num_loaded]);
-        }
-
-        console.log(table.toString());
-
-        //Comparing the reblogged author,permlinks to the author,permlinks provided by steembottracker
-        rpermlink.forEach(r => {
-            var check = permlinks.includes(r);
-
-            //If there is difference in authors, new posts to resteemed
-            if (check == false) {
-                console.log("there's new frontrun post!");
-
-                num_loaded++;
-
-                newpost1 = newpost1.replace(/{num}/g, num_loaded);
-                var newpost = JSON.parse(newpost1);
-                createPost(newpost);
-               
-
-            } else {
-                console.log("no new frontrun posts!");
-            }
-
-        });
-
-
-        /*steem.api.getActiveVotes(authors[0], permlinks[0], function (err, result) {
-            result.forEach(function (data) {
-                //console.log(data.voter, upvoterbots[0]);
-                if (data.voter == upvoterbots[0]) {
-                    console.log("Voted by bots! No need to upvote.")
-                } else {
-                    console.log("proceed upvote!")
-                }
-            });*/
-    });
+    } else if (check == true) {
+        console.log("No new frontrun posts!");
+        setTimeout(frontRun, 5000);
+    }
 }
 
 function createPost(newpost) {
+    num_loaded++;
+
+    newpost1 = JSON.parse(newpost1.replace(/{num}/g, num_loaded));
+    var newpost = newpost1;
+
     steem.broadcast.comment(
         privPostingWif,  // Steemit.com Walvar -> Permissions -> Show Private Key (for Posting)
         newpost.parent_author,        // empty for new blog post 
@@ -159,14 +101,12 @@ function createPost(newpost) {
         content,                 // body of the post or comment
         newpost.json_metadata,         // arbitrary metadata
         function (err, result) {
-            console.log(err, result);
             if (result) {
-                console.log(result.name);
                 resteem();
             } if (err) {
                 try { throw err }
                 catch (err) {
-                    console.log(err.name);
+                    console.log(err.message);
                     console.log('===========================create post failed')
                     setTimeout(frontRun, 5 * 60 * 1000);
                 }
