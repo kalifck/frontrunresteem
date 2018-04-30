@@ -59,13 +59,62 @@ function frontRun() {
 }
 
 
+//Pushing array to permlinks and authors
 function scurate(posts) {
 
     for (var i = 0; i < posts.length; i++) {
         authors.push(posts[i].author);
         permlinks.push(posts[i].permlink);
     }
-    checkpost();
+    queryRPost();
+}
+        
+
+//Comparing the reblogged author,permlinks to the author,permlinks provided by steembottracker
+//Fetching already reblogged posts
+function queryRPost() {
+
+    steem.api.getAccountHistory(username, -1, 1000, function (err, result) {
+
+        result.forEach(trans => {
+            var op = trans[1].op;
+
+            //Only care about operation named customjson and follow id
+            if (op[0] == 'custom_json' && op[1].id == 'follow') {
+                var json = JSON.parse(op[1].json);
+                var { author, permlink } = json[1];
+                rpermlink.push(permlink);
+            }
+
+            if (op[0] == 'comment' && op[1].permlink) {
+                var nperm = op[1].permlink;
+                tallyperm.push(nperm);
+            }
+        });
+
+        const x = tallyperm.filter(item => item.match(/^curation-\d+$/))
+
+        num_loaded = Math.max.apply(null, (x.map(function (item) { return item.replace(/curation-/g, '') })
+        ));
+
+        //Reversing the whole array to get the latest reblogged post
+        rpermlink = rpermlink.reverse();
+        rpermlink.length = 2;
+
+        //Using cli-table to print data
+        var Table = require('cli-table2');
+        var table = new Table({
+            head: ["index", "author", "permlinks", "reblogged", "tallypost"],
+            wordWrap: true
+        });
+
+        for (var i = 0; i < 5; i++) {
+            table.push([i + 1, authors[i], permlinks[i], rpermlink[i], num_loaded]);
+        }
+
+        console.log(table.toString());
+        checkpost();
+    })
 }
 
 
