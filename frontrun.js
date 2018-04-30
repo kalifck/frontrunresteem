@@ -1,4 +1,4 @@
-﻿var FULL_CURATION_TIME = 30 * 60 * 1000;
+var FULL_CURATION_TIME = 30 * 60 * 1000;
 var api_url = 'https://steembottracker.net';
 const fs = require('fs');
 const axios = require('axios');
@@ -176,7 +176,7 @@ function createPost(newpost) {
 
 //Choosing the top 2 post in terms of curation rewards
 function resteem(j) {
-
+    var sucess = 0;
     for (j = 0; j < 2; j++) {
         const json = JSON.stringify(['reblog', {
             account: username,
@@ -184,17 +184,29 @@ function resteem(j) {
             permlink: permlinks[j]
         }]);
 
-
         steem.broadcast.customJson(privPostingWif, [], [username], 'follow', json, function (err, result) {
             if (result) {
-                console.log('successfully resteemed');
-            } if (err) {
+                sucess++;
+                console.log('========================================');
+                console.log('       Successfully resteemed');
+                console.log('========================================')
+            } else if (err) {
+                console.log('=================================================');
                 console.log(err.message);
-                console.log('===================Resteemed failed')
-                j++;
-                resteem(j);
+                console.log('=================================================');
+                if (sucess < 2) {
+                    for (j += 1; j < permlinks.length; j++) {
+                        resteem(j);
+                    }
+                }
             }
+            console.log(json);
         });
     }
+}
 
+function sleep(ms) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+    })
 }
