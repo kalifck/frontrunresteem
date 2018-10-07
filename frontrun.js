@@ -1,4 +1,4 @@
-var FULL_CURATION_TIME = 30 * 60 * 1000;
+var FULL_CURATION_TIME = 15 * 60 * 1000; // new curation Time of 15 min after HF20 in Steemit 25.09.2018
 var api_url = 'https://steembottracker.net';
 const fs = require('fs');
 const axios = require('axios');
@@ -41,9 +41,9 @@ function frontRun() {
                         post.title = result.title;
                         post.author = result.author;
                         post.permlink = result.permlink;
-
-                        var pre_30_min_pct = Math.min(new Date() - new Date(result.created + 'Z'), FULL_CURATION_TIME) / FULL_CURATION_TIME;
-                        post.curation_reward = (Math.sqrt((post.payout + 1) * 0.25) - Math.sqrt(post.payout * 0.25)) * Math.sqrt((post.payout + 1 + post.vote_value) * 0.25) * pre_30_min_pct;
+                        // changed to pre_15_min_pct and curation reward calculation to 30%, again because of the HF20 
+                        var pre_15_min_pct = Math.min(new Date() - new Date(result.created + 'Z'), FULL_CURATION_TIME) / FULL_CURATION_TIME;
+                        post.curation_reward = (Math.sqrt((post.payout + 1) * 0.3) - Math.sqrt(post.payout * 0.3)) * Math.sqrt((post.payout + 1 + post.vote_value) * 0.25) * pre_15_min_pct;
 
                     }
 
